@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paocuppies | Repostería</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            berry: '#8a1c4a',
+                            pink: '#e84883',
+                            lightpink: '#fce4ec',
+                            gold: '#f3bc42',
+                            dark: '#120b10',
+                            card: '#1c1219'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif']
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-brand-dark text-slate-100 min-h-screen font-sans pb-24">
+
+    <!-- Header / Navbar -->
+    <header class="sticky top-0 z-40 bg-brand-dark/95 backdrop-blur-md border-b border-brand-berry/30 px-4 py-3">
+        <div class="max-w-5xl mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-brand-pink to-brand-gold p-0.5 shadow-lg flex items-center justify-center text-white text-lg">
+                    <i class="fa-solid fa-cake-candles"></i>
+                </div>
+                <div>
+                    <h1 class="font-serif font-bold text-xl leading-tight text-white">Paocuppies</h1>
+                    <p class="text-xs text-slate-400 flex items-center gap-1 font-medium">
+                        <i class="fa-solid fa-location-dot text-brand-pink text-[10px]"></i> EL TIGRE, ANZOÁTEGUI
+                    </p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <button onclick="toggleEditMode()" id="edit-toggle-btn" class="hidden px-3 py-1.5 rounded-full text-xs font-semibold bg-brand-berry/30 text-brand-gold border border-brand-gold/40 items-center gap-1.5 shadow-sm">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                    <span id="edit-btn-text">Modo Edición</span>
+                </button>
+
+                <button onclick="openCart()" class="relative px-3 py-1.5 rounded-full bg-brand-pink text-white font-bold text-xs flex items-center gap-1.5 shadow-lg shadow-brand-pink/30">
+                    <i class="fa-solid fa-basket-shopping"></i>
+                    <span>Pedido</span>
+                    <span id="cart-badge" class="bg-brand-gold text-black text-[10px] font-extrabold w-4 h-4 rounded-full flex items-center justify-center">0</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-5xl mx-auto px-4 pt-4 space-y-6">
+        <div class="text-center py-1">
+            <span class="inline-block px-4 py-1 rounded-full bg-brand-berry/30 border border-brand-pink/30 text-brand-pink text-xs font-bold uppercase tracking-wider">
+                ✨ Amor y arte en cada detalle
+            </span>
+        </div>
+
+        <!-- Category Pills -->
+        <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-none text-xs font-semibold">
+            <button onclick="filterCategory('Todas')" class="cat-pill active px-4 py-2 rounded-xl bg-brand-pink text-white whitespace-nowrap shadow-md">Todas</button>
+            <button onclick="filterCategory('Tortas')" class="cat-pill px-4 py-2 rounded-xl bg-brand-card text-slate-300 hover:text-white border border-white/10 whitespace-nowrap">Tortas</button>
+            <button onclick="filterCategory('Postres')" class="cat-pill px-4 py-2 rounded-xl bg-brand-card text-slate-300 hover:text-white border border-white/10 whitespace-nowrap">Postres</button>
+            <button onclick="filterCategory('Papelería Creativa')" class="cat-pill px-4 py-2 rounded-xl bg-brand-card text-slate-300 hover:text-white border border-white/10 whitespace-nowrap">Papelería Creativa</button>
+            <button onclick="filterCategory('Combos')" class="cat-pill px-4 py-2 rounded-xl bg-brand-card text-slate-300 hover:text-white border border-white/10 whitespace-nowrap">Combos</button>
+            <button onclick="filterCategory('Decoraciones')" class="cat-pill px-4 py-2 rounded-xl bg-brand-card text-slate-300 hover:text-white border border-white/10 whitespace-nowrap">Decoraciones</button>
+        </div>
+
+        <div id="add-prod-container" class="hidden flex justify-end">
+            <button onclick="openEditModal()" class="px-3 py-1.5 rounded-xl bg-emerald-600 text-white text-xs font-bold flex items-center gap-1.5 shadow-lg">
+                <i class="fa-solid fa-plus"></i> Agregar Nuevo Producto
+            </button>
+        </div>
+
+        <!-- Products Grid -->
+        <div id="products-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"></div>
+    </main>
+
+    <!-- Modal Builder -->
+    <div id="builder-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 overflow-y-auto">
+        <div class="w-full max-w-md bg-brand-card border border-brand-berry/40 rounded-3xl p-5 shadow-2xl space-y-4 my-auto relative max-h-[90vh] overflow-y-auto">
+            <button onclick="closeBuilderModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/10 text-white flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+            <div class="rounded-2xl bg-gradient-to-br from-brand-berry/40 to-brand-dark p-4 border border-brand-pink/20 text-center space-y-2">
+                <span class="px-3 py-0.5 rounded-full bg-brand-gold/20 text-brand-gold text-[10px] font-bold border border-brand-gold/30 inline-block">✨ Amor y arte en cada detalle</span>
+                <h3 class="font-serif font-bold text-xl text-white">Paocuppies</h3>
+                <p class="text-xs text-slate-300">Elige tu formato, selecciona tus rellenos y envía tu pedido por WhatsApp.</p>
+            </div>
+            <div class="space-y-1.5">
+                <label class="text-xs font-bold text-slate-200">1. Selecciona las porciones:</label>
+                <div class="grid grid-cols-3 gap-2">
+                    <button onclick="selectPortion(15, 45)" id="port-15" class="portion-btn p-2.5 rounded-2xl border border-white/10 bg-brand-dark/60 text-center">
+                        <div class="text-xs font-bold text-white">15+ pers.</div>
+                        <div class="text-sm font-extrabold text-brand-gold">$45</div>
+                    </button>
+                    <button onclick="selectPortion(25, 50)" id="port-25" class="portion-btn p-2.5 rounded-2xl border border-white/10 bg-brand-dark/60 text-center">
+                        <div class="text-xs font-bold text-white">25+ pers.</div>
+                        <div class="text-sm font-extrabold text-brand-gold">$50</div>
+                    </button>
+                    <button onclick="selectPortion(35, 55)" id="port-35" class="portion-btn p-2.5 rounded-2xl border border-white/10 bg-brand-dark/60 text-center">
+                        <div class="text-xs font-bold text-white">35+ pers.</div>
+                        <div class="text-sm font-extrabold text-brand-gold">$55</div>
+                    </button>
+                </div>
+            </div>
+            <div class="space-y-1.5">
+                <label class="text-xs font-bold text-slate-200">2. Sabor del Bizcocho:</label>
+                <select id="cake-flavor" class="w-full bg-brand-dark border border-white/10 rounded-xl p-2.5 text-xs text-white">
+                    <option value="Vainilla">Vainilla</option>
+                    <option value="Chocolate">Chocolate</option>
+                    <option value="Marmoleada">Marmoleada</option>
+                </select>
+            </div>
+            <div class="space-y-1.5">
+                <label class="text-xs font-bold text-slate-200">3. Rellenos clásicos (doble relleno):</label>
+                <div class="space-y-1 text-xs">
+                    <label class="flex items-center justify-between p-2.5 rounded-xl bg-brand-dark/50 border border-white/5 cursor-pointer">
+                        <span class="text-slate-300">Chocolate</span><input type="radio" name="classic-fill" value="Chocolate" class="accent-brand-pink w-4 h-4" checked>
+                    </label>
+                    <label class="flex items-center justify-between p-2.5 rounded-xl bg-brand-dark/50 border border-white/5 cursor-pointer">
+                        <span class="text-slate-300">Arequipe</span><input type="radio" name="classic-fill" value="Arequipe" class="accent-brand-pink w-4 h-4">
+                    </label>
+                    <label class="flex items-center justify-between p-2.5 rounded-xl bg-brand-dark/50 border border-white/5 cursor-pointer">
+                        <span class="text-slate-300">Crema de Oreo con gotas de chocolate</span><input type="radio" name="classic-fill" value="Crema de Oreo con gotas de chocolate" class="accent-brand-pink w-4 h-4">
+                    </label>
+                </div>
+            </div>
+            <div class="space-y-1.5 pt-2 border-t border-white/10">
+                <label class="text-xs font-bold text-brand-gold flex items-center justify-between"><span>✨ Otros Sabores (Opcional)</span><span class="text-[10px] text-slate-400">+$5.00</span></label>
+                <select id="gourmet-flavor" class="w-full bg-brand-dark border border-brand-gold/30 rounded-xl p-2.5 text-xs text-white">
+                    <option value="Ninguno">Ninguno (Tradicional)</option>
+                    <option value="Fresas con crema diplomática (+ $5)">Fresas con crema diplomática</option>
+                    <option value="Crema de parchita (+ $5)">Crema de parchita</option>
+                    <option value="Crema de caramelo (+ $5)">Crema de caramelo</option>
+                    <option value="Red velvet (+ $5)">Red velvet</option>
+                    <option value="Moka (+ $5)">Moka</option>
+                    <option value="Zanahoria (+ $5)">Zanahoria</option>
+                </select>
+            </div>
+            <div class="pt-2 border-t border-white/10">
+                <label class="flex items-center justify-between p-2.5 rounded-xl bg-brand-berry/20 border border-brand-pink/30 cursor-pointer">
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-wand-magic-sparkles text-brand-gold text-xs"></i>
+                        <div><div class="text-xs font-bold text-white">Topper Personalizado</div><div class="text-[10px] text-slate-300">Papelería creativa 3D</div></div>
+                    </div>
+                    <div class="flex items-center gap-2"><span class="text-xs font-extrabold text-brand-gold">+$3.00</span><input type="checkbox" id="topper-addon" class="accent-brand-pink w-4 h-4"></div>
+                </label>
+            </div>
+            <button onclick="addCustomCakeToCart()" class="w-full py-3 rounded-2xl bg-gradient-to-r from-brand-pink to-brand-berry text-white font-bold text-xs shadow-lg flex items-center justify-center gap-2">
+                <i class="fa-solid fa-basket-shopping"></i> Agregar Torta al Pedido
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal Carrito -->
+    <div id="cart-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex justify-end">
+        <div class="w-full max-w-md bg-brand-card h-full flex flex-col p-4 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-white/10 pb-3">
+                <h3 class="font-serif font-bold text-lg text-white flex items-center gap-2"><i class="fa-solid fa-basket-shopping text-brand-pink"></i> Resumen de Pedido</h3>
+                <button onclick="closeCart()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div id="cart-items" class="flex-1 overflow-y-auto py-3 space-y-3"></div>
+            <div class="border-t border-white/10 pt-3 space-y-3">
+                <div class="space-y-1 text-xs"><label class="font-bold text-slate-200">Fecha del evento:</label><input type="date" id="order-date" class="w-full bg-brand-dark border border-white/10 rounded-xl p-2.5 text-white"></div>
+                <div class="space-y-1 text-xs"><label class="font-bold text-slate-200">Detalles / Papelería:</label><input type="text" id="order-notes" placeholder="Ej: Motivo, nombre y edad..." class="w-full bg-brand-dark border border-white/10 rounded-xl p-2.5 text-white"></div>
+                <div class="flex items-center justify-between text-sm font-bold text-white pt-2 border-t border-white/5"><span>Total Estimado:</span><span id="cart-total" class="text-brand-gold text-lg">$0.00</span></div>
+                <button onclick="sendWhatsAppOrder()" class="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-lg flex items-center justify-center gap-2">
+                    <i class="fa-brands fa-whatsapp text-lg"></i> Confirmar Pedido por WhatsApp
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Editor -->
+    <div id="edit-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="w-full max-w-md bg-brand-card rounded-2xl p-4 border border-brand-berry/40 space-y-3">
+            <h3 id="modal-title" class="font-serif font-bold text-lg text-white">Editar Producto</h3>
+            <input type="hidden" id="edit-id">
+            <div class="space-y-2 text-xs">
+                <div><label class="text-slate-300 font-semibold">Nombre:</label><input type="text" id="edit-name" class="w-full bg-brand-dark border border-white/10 rounded-xl p-2 text-white"></div>
+                <div><label class="text-slate-300 font-semibold">Categoría:</label><select id="edit-category" class="w-full bg-brand-dark border border-white/10 rounded-xl p-2 text-white"><option value="Tortas">Tortas</option><option value="Postres">Postres</option><option value="Papelería Creativa">Papelería Creativa</option><option value="Combos">Combos</option><option value="Decoraciones">Decoraciones</option></select></div>
+                <div><label class="text-slate-300 font-semibold">Precio ($):</label><input type="number" id="edit-price" step="0.5" class="w-full bg-brand-dark border border-white/10 rounded-xl p-2 text-white"></div>
+                <div><label class="text-slate-300 font-semibold">Descripción:</label><textarea id="edit-desc" rows="2" class="w-full bg-brand-dark border border-white/10 rounded-xl p-2 text-white"></textarea></div>
+                <div><label class="text-slate-300 font-semibold">URL Foto:</label><input type="text" id="edit-img" class="w-full bg-brand-dark border border-white/10 rounded-xl p-2 text-white"></div>
+            </div>
+            <div class="flex justify-end gap-2 pt-2">
+                <button onclick="closeEditModal()" class="px-3 py-1.5 rounded-xl bg-white/10 text-white text-xs">Cancelar</button>
+                <button onclick="saveProduct()" class="px-3 py-1.5 rounded-xl bg-brand-pink text-white font-bold text-xs">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const defaultProducts = [
+            {id:1, category:"Tortas", name:"Torta Temática Personalizada", price:45, desc:"Decorada en crema Chantilly con opción de topper personalizado. Elige bizcocho y tu relleno doble.", img:"https://i.ibb.co/9mPZhy1z/Whats-App-Image-2026-10-27-at-1-52-40-PM.jpg", isCustomBuilder:true},
+            {id:2, category:"Tortas", name:"Pastel Express", price:30, desc:"Pastel rápido, decorado tal cual la foto y listo para llevar. Se modifica su color. Rinde para 15 porciones.", img:"https://i.ibb.co/Wv6mZP2b/Whats-App-Image-2026-10-27-at-8-08-09-PM.jpg", isCustomBuilder:false},
+            {id:3, category:"Postres", name:"Pastel de Parchita", price:55, desc:"Rinde para 20 porciones. Genovés embebido, relleno con una suave y deliciosa crema pastelera de parchita, topping de crema diplomática de parchita y sirope de parchita.", img:"https://i.ibb.co/GvSdRSXR/Whats-App-Image-2026-10-27-at-1-54-43-PM.jpg", isCustomBuilder:false},
+            {id:4, category:"Postres", name:"Mini Donas", price:19, desc:"40 mini donas. Cobertura de chocolate, topping de chispas de chocolate, oreo y chispas de colores.", img:"https://i.ibb.co/Kzhp5fhm/Whats-App-Image-2026-10-27-at-2-06-12-PM.jpg", isCustomBuilder:false},
+            {id:1793136305162, category:"Tortas", name:"Pastel 2 niveles", price:83, desc:"Pastel tradicional de vainilla o chocolate, doble relleno. Para 45-50 porciones.", img:"https://i.ibb.co/6JPGy5S4/Whats-App-Image-2026-10-27-at-1-36-00-PM.jpg", isCustomBuilder:false},
+            {id:1793136372968, category:"Tortas", name:"Pastel más vendido", price:50, desc:"Pastel húmedo de chocolate, relleno con arequipe. Topping de fresas. Rinde para 20 porciones.", img:"https://i.ibb.co/C3TYBF42/Whats-App-Image-2026-10-27-at-1-36-01-PM.jpg", isCustomBuilder:false},
+            {id:1793136824771, category:"Tortas", name:"Pastel Express Mini", price:32, desc:"Pastel Tradicional de chocolate, relleno con crema de oreo y gotas de chocolate.", img:"https://i.ibb.co/svWv1wKV/Whats-App-Image-2026-10-27-at-8-08-09-PM.jpg", isCustomBuilder:false},
+            {id:1793136986946, category:"Papelería Creativa", name:"Cotillones", price:25, desc:"12 cotillones tipo lonchera, personalizado con el nombre y la edad.", img:"https://i.ibb.co/VYJ1S6XY/Whats-App-Image-2026-10-27-at-2-02-09-PM.jpg", isCustomBuilder:false},
+            {id:1793137403148, category:"Papelería Creativa", name:"Cotillones tipo bolsa", price:20, desc:"12 cotillones tipo bolsita, personalizado con el nombre y la edad.", img:"https://i.ibb.co/PvP1GjYw/cotillon.jpg", isCustomBuilder:false},
+            {id:1793137714555, category:"Decoraciones", name:"Decoración Sencilla", price:95, desc:"1 paraban, 1 arco de globos, 2 mesas, bases de dulces, luces, alfombra, temática sencilla.", img:"https://i.ibb.co/PZXtWKVk/Whats-App-Image-2026-10-27-at-1-52-49-PM.jpg", isCustomBuilder:false},
+            {id:1793148383720, category:"Papelería Creativa", name:"Tarjetas personalizadas", price:5, desc:"12 und. Tarjetas personalizadas.", img:"https://i.ibb.co/PvP1GjYw/cotillon.jpg", isCustomBuilder:false},
+            {id:1793148436524, category:"Papelería Creativa", name:"Apliques", price:5, desc:"12 und. Apliques.", img:"https://i.ibb.co/VYJ1S6XY/Whats-App-Image-2026-10-27-at-2-02-09-PM.jpg", isCustomBuilder:false},
+            {id:1793148555263, category:"Decoraciones", name:"Decoraciones", price:150, desc:"Se incluyen parabanes, arco de globos, cotillonera, luces, tarima...", img:"https://i.ibb.co/PZXtWKVk/Whats-App-Image-2026-10-27-at-1-52-49-PM.jpg", isCustomBuilder:false},
+            {id:1793148690966, category:"Decoraciones", name:"Stand Fotográfico", price:170, desc:"Set de parabanes, arco de globos, luces, tarima y personalización.", img:"https://i.ibb.co/PZXtWKVk/Whats-App-Image-2026-10-27-at-1-52-49-PM.jpg", isCustomBuilder:false},
+            {id:1793148943604, category:"Postres", name:"Tres Leches Tradicional", price:55, desc:"Rinde para 20 porciones. Genovés embebido con sus tres leches...", img:"https://i.ibb.co/GvSdRSXR/Whats-App-Image-2026-10-27-at-1-54-43-PM.jpg", isCustomBuilder:false},
+            {id:1793151893354, category:"Postres", name:"Cupcakes", price:16, desc:"60 minicupcakes.", img:"https://i.ibb.co/Kzhp5fhm/Whats-App-Image-2026-10-27-at-2-06-12-PM.jpg", isCustomBuilder:false},
+            {id:1793151934209, category:"Postres", name:"Mini Galletas", price:17, desc:"50 galletas.", img:"https://i.ibb.co/Kzhp5fhm/Whats-App-Image-2026-10-27-at-2-06-12-PM.jpg", isCustomBuilder:false},
+            {id:1793151990354, category:"Tortas", name:"Pastel Genérico", price:48, desc:"Rinde para 20 porciones. Fotos personalizadas.", img:"https://i.ibb.co/9mPZhy1z/Whats-App-Image-2026-10-27-at-1-52-40-PM.jpg", isCustomBuilder:false},
+            {id:1793153344193, category:"Decoraciones", name:"Deco Happy Birthday", price:85, desc:"Set fotográfico sencillo. Se incluye: 1 paraban, alfombra, luces, 1 mesa...", img:"https://i.ibb.co/PZXtWKVk/Whats-App-Image-2026-10-27-at-1-52-49-PM.jpg", isCustomBuilder:false},
+            {id:1793153926494, category:"Papelería Creativa", name:"Topper", price:7.5, desc:"Topper personalizado 3D.", img:"https://i.ibb.co/VYJ1S6XY/Whats-App-Image-2026-10-27-at-2-02-09-PM.jpg", isCustomBuilder:false},
+            {id:1793154145841, category:"Tortas", name:"Minicake Express", price:36, desc:"Pastel redondo o tipo corazón, 1 solo relleno. Solo se modifica el...", img:"https://i.ibb.co/svWv1wKV/Whats-App-Image-2026-10-27-at-8-08-09-PM.jpg", isCustomBuilder:false},
+            {id:1793154732856, category:"Postres", name:"Mini Pavlovas", price:20, desc:"30 und.", img:"https://i.ibb.co/j9Xzw2vh/bee73ef46a4ddebeae3687d1d08c8704.jpg", isCustomBuilder:false},
+            {id:1793154779473, category:"Postres", name:"Profiteroles", price:35, desc:"50 profiteroles, rellenos de crema diplomática, moka o caramelo.", img:"https://i.ibb.co/GvSdRSXR/Whats-App-Image-2026-10-27-at-1-54-43-PM.jpg", isCustomBuilder:false},
+            {id:1793154851010, category:"Postres", name:"Shots Tres leches o chocolate", price:18.5, desc:"24 Shots tres leches o chocolate.", img:"https://i.ibb.co/GvSdRSXR/Whats-App-Image-2026-10-27-at-1-54-43-PM.jpg", isCustomBuilder:false},
+            {id:1793154911156, category:"Postres", name:"Trufas", price:18, desc:"50 und.", img:"https://i.ibb.co/Kzhp5fhm/Whats-App-Image-2026-10-27-at-2-06-12-PM.jpg", isCustomBuilder:false},
+            {id:1793156161977, category:"Postres", name:"Cheesecake de fresa", price:45, desc:"25 und. Cheesecake de fresa, oreo o parchita.", img:"https://i.ibb.co/GvSdRSXR/Whats-App-Image-2026-10-27-at-1-54-43-PM.jpg", isCustomBuilder:false},
+            {id:1793156273594, category:"Postres", name:"Pannacotas", price:27, desc:"24 und.", img:"https://i.ibb.co/GvSdRSXR/Whats-App-Image-2026-10-27-at-1-54-43-PM.jpg", isCustomBuilder:false}
+        ];
+
+        let products = defaultProducts;
+        let cart = [];
+        let isEditMode = false;
+        let selectedCategory = 'Todas';
+        let selectedPortion = { pers: 15, price: 45 };
+
+        function initApp() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('admin') === '1') {
+                const editBtn = document.getElementById('edit-toggle-btn');
+                editBtn.classList.remove('hidden');
+                editBtn.classList.add('flex');
+            }
+            renderProducts();
+            selectPortion(15, 45);
+        }
+
+        function filterCategory(cat) {
+            selectedCategory = cat;
+            document.querySelectorAll('.cat-pill').forEach(btn => {
+                if(btn.innerText.trim() === cat) {
+                    btn.className = 'cat-pill active px-4 py-2 rounded-xl bg-brand-pink text-white whitespace-nowrap shadow-md';
+                } else {
+                    btn.className = 'cat-pill px-4 py-2 rounded-xl bg-brand-card text-slate-300 hover:text-white border border-white/10 whitespace-nowrap';
+                }
+            });
+            renderProducts();
+        }
+
+        function renderProducts() {
+            const grid = document.getElementById('products-grid');
+            const filtered = selectedCategory === 'Todas' ? products : products.filter(p => p.category === selectedCategory);
+            if(filtered.length === 0) {
+                grid.innerHTML = `<div class="col-span-full text-center py-12 text-slate-400 text-xs">No hay productos en esta categoría.</div>`;
+                return;
+            }
+            grid.innerHTML = filtered.map(p => `
+                <div class="bg-brand-card border border-brand-berry/30 rounded-3xl overflow-hidden shadow-xl flex flex-col relative group">
+                    <div class="absolute top-3 left-3 z-10">
+                        <span class="px-2.5 py-0.5 rounded-full bg-brand-dark/80 backdrop-blur-md text-brand-gold font-extrabold text-[10px] uppercase border border-brand-gold/30">${p.category}</span>
+                    </div>
+                    <div class="h-44 overflow-hidden relative bg-brand-dark">
+                        <img src="${p.img}" alt="${p.name}" class="w-full h-full object-contain bg-brand-dark group-hover:scale-105 transition-transform duration-300">
+                    </div>
+                    <div class="p-4 flex-1 flex flex-col justify-between space-y-3">
+                        <div>
+                            <div class="flex items-start justify-between gap-1 mb-1">
+                                <h4 class="font-serif font-bold text-white text-base leading-snug">${p.name}</h4>
+                                <span class="font-extrabold text-brand-gold text-base">$${p.price.toFixed(2)}</span>
+                            </div>
+                            <p class="text-xs text-slate-300 leading-relaxed line-clamp-2">${p.desc}</p>
+                        </div>
+                        <button onclick="${p.isCustomBuilder ? 'openBuilderModal()' : `addToCartDirect(${p.id})`}" class="w-full py-2.5 rounded-xl bg-brand-berry/40 hover:bg-brand-pink border border-brand-pink/40 text-white font-bold text-xs flex items-center justify-center gap-2 transition-all">
+                            <i class="fa-solid fa-basket-shopping text-brand-pink group-hover:text-white"></i> Agregar al Pedido
+                        </button>
+                    </div>
+                    ${isEditMode ? `
+                        <div class="absolute top-2 right-2 flex gap-1 bg-brand-dark p-1 rounded-full border border-white/20 shadow-xl z-20">
+                            <button onclick="openEditModal(${p.id})" class="w-7 h-7 rounded-full bg-amber-500 text-white flex items-center justify-center text-xs"><i class="fa-solid fa-pen"></i></button>
+                            <button onclick="deleteProduct(${p.id})" class="w-7 h-7 rounded-full bg-rose-600 text-white flex items-center justify-center text-xs"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        function selectPortion(pers, price) {
+            selectedPortion = { pers, price };
+            document.querySelectorAll('.portion-btn').forEach(btn => btn.classList.remove('border-brand-pink', 'bg-brand-berry/40'));
+            const selectedBtn = document.getElementById(`port-${pers}`);
+            if(selectedBtn) selectedBtn.classList.add('border-brand-pink', 'bg-brand-berry/40');
+        }
+
+        function openBuilderModal() { document.getElementById('builder-modal').classList.remove('hidden'); }
+        function closeBuilderModal() { document.getElementById('builder-modal').classList.add('hidden'); }
+
+        function addCustomCakeToCart() {
+            const flavor = document.getElementById('cake-flavor').value;
+            const gourmet = document.getElementById('gourmet-flavor').value;
+            const hasTopper = document.getElementById('topper-addon').checked;
+            const selectedFillRadio = document.querySelector('input[name="classic-fill"]:checked');
+            const selectedFill = selectedFillRadio ? selectedFillRadio.value : 'Chocolate';
+            let finalPrice = selectedPortion.price;
+            let details = `Bizcocho: ${flavor} | Relleno clásico: ${selectedFill}`;
+            if (gourmet !== "Ninguno") { finalPrice += 5.00; details += ` | ${gourmet}`; }
+            if (hasTopper) { finalPrice += 3.00; details += ` | +Topper Personalizado ($3)`; }
+            cart.push({ id: Date.now(), name: `Torta Personalizada Chantilly (${selectedPortion.pers}+ pers.)`, price: finalPrice, details: details });
+            updateCartUI();
+            closeBuilderModal();
+            openCart();
+        }
+
+        function addToCartDirect(id) {
+            const p = products.find(x => x.id === id);
+            if(p) {
+                cart.push({ id: Date.now(), name: p.name, price: p.price, details: p.desc });
+                updateCartUI();
+                openCart();
+            }
+        }
+
+        function updateCartUI() {
+            document.getElementById('cart-badge').innerText = cart.length;
+            const container = document.getElementById('cart-items');
+            if(cart.length === 0) {
+                container.innerHTML = '<p class="text-xs text-slate-400 text-center py-8">Tu pedido está vacío</p>';
+            } else {
+                container.innerHTML = cart.map((item, index) => `
+                    <div class="bg-brand-dark p-3 rounded-2xl border border-white/5 flex items-start justify-between text-xs space-x-2">
+                        <div>
+                            <div class="font-bold text-white">${item.name}</div>
+                            <div class="text-[11px] text-slate-400 mt-0.5 leading-tight">${item.details}</div>
+                            <div class="text-brand-gold font-extrabold mt-1">$${item.price.toFixed(2)}</div>
+                        </div>
+                        <button onclick="removeFromCart(${index})" class="text-rose-400 p-1 hover:text-rose-300"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                `).join('');
+            }
+            document.getElementById('cart-total').innerText = `$${cart.reduce((sum, item) => sum + item.price, 0).toFixed(2)}`;
+        }
+
+        function removeFromCart(index) { cart.splice(index, 1); updateCartUI(); }
+        function openCart() { document.getElementById('cart-modal').classList.remove('hidden'); }
+        function closeCart() { document.getElementById('cart-modal').classList.add('hidden'); }
+
+        function toggleEditMode() {
+            isEditMode = !isEditMode;
+            document.getElementById('edit-btn-text').innerText = isEditMode ? 'Listo' : 'Modo Edición';
+            document.getElementById('add-prod-container').classList.toggle('hidden', !isEditMode);
+            renderProducts();
+        }
+
+        function openEditModal(id = null) {
+            document.getElementById('edit-modal').classList.remove('hidden');
+            if(id) {
+                const p = products.find(x => x.id === id);
+                document.getElementById('modal-title').innerText = 'Editar Producto';
+                document.getElementById('edit-id').value = p.id;
+                document.getElementById('edit-name').value = p.name;
+                document.getElementById('edit-category').value = p.category;
+                document.getElementById('edit-price').value = p.price;
+                document.getElementById('edit-desc').value = p.desc;
+                document.getElementById('edit-img').value = p.img;
+            } else {
+                document.getElementById('modal-title').innerText = 'Nuevo Producto';
+                document.getElementById('edit-id').value = '';
+                document.getElementById('edit-name').value = '';
+                document.getElementById('edit-category').value = 'Tortas';
+                document.getElementById('edit-price').value = '';
+                document.getElementById('edit-desc').value = '';
+                document.getElementById('edit-img').value = '';
+            }
+        }
+
+        fn closeEditModal() { document.getElementById('edit-modal').classList.add('hidden'); }
+
+        function saveProduct() {
+            const id = document.getElementById('edit-id').value;
+            const name = document.getElementById('edit-name').value;
+            const category = document.getElementById('edit-category').value;
+            const price = parseFloat(document.getElementById('edit-price').value) || 0;
+            const desc = document.getElementById('edit-desc').value;
+            const img = document.getElementById('edit-img').value || 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500&auto=format&fit=crop';
+
+            if(id) {
+                const idx = products.findIndex(x => x.id == id);
+                products[idx] = { ...products[idx], name, category, price, desc, img };
+            } else {
+                products.push({ id: Date.now(), name, category, price, desc, img, isCustomBuilder: false });
+            }
+            renderProducts();
+            closeEditModal();
+        }
+
+        function deleteProduct(id) {
+            products = products.filter(x => x.id !== id);
+            renderProducts();
+        }
+
+        function sendWhatsAppOrder() {
+            if(cart.length === 0) return alert('El pedido está vacío');
+            const date = document.getElementById('order-date').value || 'Por acordar';
+            const notes = document.getElementById('order-notes').value || 'Sin observaciones extra';
+            const total = cart.reduce((sum, item) => sum + item.price, 0);
+
+            let text = `*¡Hola Paocuppies! Quiero realizar el siguiente pedido:* 🎂✨\n\n`;
+            cart.forEach((item, i) => { text += `*${i+1}. ${item.name}* - $${item.price.toFixed(2)}\n   _${item.details}_\n\n`; });
+            text += `📅 *Fecha requerida:* ${date}\n`;
+            text += `📝 *Detalles / notas:* ${notes}\n`;
+            text += `💰 *Total del pedido:* $${total.toFixed(2)} (Pago Móvil Tasa BCV o Divisas)\n\n`;
+            text += `Quedo a la espera de su confirmación. ¡Muchas gracias!`;
+
+            window.open(`https://wa.me/584148487778?text=${encodeURIComponent(text)}`, '_blank');
+        }
+
+        initApp();
+    </script>
+</body>
+</html>
